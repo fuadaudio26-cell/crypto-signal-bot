@@ -52,6 +52,101 @@ async function checkTokenSafety(contract) {
 }
 
 // =====================================
+// AI SCORE
+// =====================================
+
+function calculateScore(
+    liquidity,
+    volume,
+    marketcap,
+    ageMinutes,
+    website,
+    twitter
+) {
+
+    let score = 0;
+
+    // =====================================
+    // LIQUIDITY
+    // =====================================
+
+    if (liquidity >= 100000) {
+
+        score += 30;
+    }
+    else if (liquidity >= 50000) {
+
+        score += 20;
+    }
+    else if (liquidity >= 10000) {
+
+        score += 10;
+    }
+
+    // =====================================
+    // VOLUME
+    // =====================================
+
+    if (volume >= 300000) {
+
+        score += 30;
+    }
+    else if (volume >= 100000) {
+
+        score += 20;
+    }
+    else if (volume >= 20000) {
+
+        score += 10;
+    }
+
+    // =====================================
+    // MARKETCAP
+    // =====================================
+
+    if (
+        marketcap >= 50000 &&
+        marketcap <= 300000
+    ) {
+
+        score += 20;
+    }
+
+    // =====================================
+    // AGE
+    // =====================================
+
+    if (ageMinutes <= 5) {
+
+        score += 20;
+    }
+    else if (ageMinutes <= 15) {
+
+        score += 10;
+    }
+
+    // =====================================
+    // WEBSITE
+    // =====================================
+
+    if (website !== "No Website") {
+
+        score += 10;
+    }
+
+    // =====================================
+    // TWITTER
+    // =====================================
+
+    if (twitter !== "No Twitter") {
+
+        score += 10;
+    }
+
+    return score;
+}
+
+// =====================================
 // MAIN SCAN
 // =====================================
 
@@ -205,43 +300,6 @@ async function getNewTokens() {
             }
 
             // =====================================
-            // AI SCORE
-            // =====================================
-
-            let score = 0;
-
-            // LIQUIDITY SCORE
-            if (liquidity > 20000) {
-                score += 25;
-            }
-
-            // VOLUME SCORE
-            if (volume > 50000) {
-                score += 25;
-            }
-
-            // MARKETCAP SCORE
-            if (
-                marketcap > 30000 &&
-                marketcap < 300000
-            ) {
-                score += 20;
-            }
-
-            // AGE SCORE
-            if (ageMinutes < 10) {
-                score += 15;
-            }
-
-            // SOCIAL SCORE
-            if (
-                website !== "No Website" &&
-                twitter !== "No Twitter"
-            ) {
-                score += 15;
-            }
-
-            // =====================================
             // RUGCHECK
             // =====================================
 
@@ -254,18 +312,46 @@ async function getNewTokens() {
             }
 
             // =====================================
-            // AI LABEL
+            // AI SCORE
+            // =====================================
+
+            const score =
+                calculateScore(
+                    liquidity,
+                    volume,
+                    marketcap,
+                    ageMinutes,
+                    website,
+                    twitter
+                );
+
+            // =====================================
+            // SIGNAL LEVEL
             // =====================================
 
             let signal = "RISKY";
 
+            let whaleAlert = "NO";
+
+            if (
+                volume > 100000 &&
+                liquidity > 30000 &&
+                ageMinutes < 10
+            ) {
+
+                whaleAlert = "YES";
+            }
+
             if (score >= 80) {
+
                 signal = "STRONG BUY";
             }
             else if (score >= 60) {
+
                 signal = "GOOD";
             }
             else if (score >= 40) {
+
                 signal = "MEDIUM";
             }
 
@@ -275,12 +361,6 @@ async function getNewTokens() {
 
             const message = `
 🚀 NEW TOKEN DETECTED
-
-🤖 AI SCORE:
-${score}/100
-
-📊 SIGNAL:
-${signal}
 
 🪙 Name:
 ${name} (${symbol})
@@ -300,6 +380,15 @@ $${Number(volume).toLocaleString()}
 💰 Marketcap:
 $${Number(marketcap).toLocaleString()}
 
+🤖 AI SCORE:
+${score}/100
+
+📊 SIGNAL:
+${signal}
+
+🐋 WHALE ALERT:
+${whaleAlert}
+
 🌐 Website:
 ${website}
 
@@ -318,7 +407,7 @@ ${contract}
             );
 
             // =====================================
-            // SIMPAN TOKEN
+            // SAVE TOKEN
             // =====================================
 
             sentTokens.add(contract);
