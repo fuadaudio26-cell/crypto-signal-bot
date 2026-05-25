@@ -387,6 +387,32 @@ async function getNewTokens() {
             score += momentumScore;
 
             // =====================================
+            // GEM PROBABILITY
+            // =====================================
+
+            let gemProbability = 0;
+
+            if (score >= 60) {
+
+                gemProbability = 50;
+            }
+
+            if (score >= 80) {
+
+                gemProbability = 75;
+            }
+
+            if (score >= 100) {
+
+                gemProbability = 90;
+            }
+
+            if (score >= 120) {
+
+                gemProbability = 99;
+            }
+
+            // =====================================
             // SIGNAL LEVEL
             // =====================================
 
@@ -506,6 +532,9 @@ ${momentumScore}
 
 🤖 <b>AI Score:</b>
 ${score}/100
+
+💎 <b>Gem Probability:</b>
+${gemProbability}%
 
 📊 <b>Signal:</b>
 ${signal}
