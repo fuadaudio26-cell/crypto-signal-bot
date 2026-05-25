@@ -65,8 +65,6 @@ function getMomentumScore(
 
     let momentum = 0;
 
-    // VOLUME VS LIQUIDITY
-
     const ratio =
         volume / liquidity;
 
@@ -84,8 +82,6 @@ function getMomentumScore(
 
         momentum += 20;
     }
-
-    // LOW MARKETCAP GEM
 
     if (marketcap < 150000) {
 
@@ -332,8 +328,6 @@ async function getNewTokens() {
                     website,
                     twitter
                 );
-
-            // FILTER SOCIAL LEMAH
 
             if (socialScore < 2) {
 
@@ -589,15 +583,6 @@ ${twitter}
 // =====================================
 
 getNewTokens();
-
-// =====================================
-// TELEGRAM TEST
-// =====================================
-
-bot.sendMessage(
-    process.env.CHAT_ID,
-    "🚀 BOT ONLINE TEST"
-);
 
 // =====================================
 // AUTO SCAN
