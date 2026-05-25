@@ -205,6 +205,43 @@ async function getNewTokens() {
             }
 
             // =====================================
+            // AI SCORE
+            // =====================================
+
+            let score = 0;
+
+            // LIQUIDITY SCORE
+            if (liquidity > 20000) {
+                score += 25;
+            }
+
+            // VOLUME SCORE
+            if (volume > 50000) {
+                score += 25;
+            }
+
+            // MARKETCAP SCORE
+            if (
+                marketcap > 30000 &&
+                marketcap < 300000
+            ) {
+                score += 20;
+            }
+
+            // AGE SCORE
+            if (ageMinutes < 10) {
+                score += 15;
+            }
+
+            // SOCIAL SCORE
+            if (
+                website !== "No Website" &&
+                twitter !== "No Twitter"
+            ) {
+                score += 15;
+            }
+
+            // =====================================
             // RUGCHECK
             // =====================================
 
@@ -217,11 +254,33 @@ async function getNewTokens() {
             }
 
             // =====================================
+            // AI LABEL
+            // =====================================
+
+            let signal = "RISKY";
+
+            if (score >= 80) {
+                signal = "STRONG BUY";
+            }
+            else if (score >= 60) {
+                signal = "GOOD";
+            }
+            else if (score >= 40) {
+                signal = "MEDIUM";
+            }
+
+            // =====================================
             // MESSAGE
             // =====================================
 
             const message = `
 🚀 NEW TOKEN DETECTED
+
+🤖 AI SCORE:
+${score}/100
+
+📊 SIGNAL:
+${signal}
 
 🪙 Name:
 ${name} (${symbol})
