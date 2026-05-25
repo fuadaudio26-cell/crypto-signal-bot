@@ -54,6 +54,48 @@ async function checkTokenSafety(contract) {
 }
 
 // =====================================
+// MOMENTUM SCORE
+// =====================================
+
+function getMomentumScore(
+    liquidity,
+    volume,
+    marketcap
+) {
+
+    let momentum = 0;
+
+    // VOLUME VS LIQUIDITY
+
+    const ratio =
+        volume / liquidity;
+
+    if (ratio >= 1) {
+
+        momentum += 20;
+    }
+
+    if (ratio >= 2) {
+
+        momentum += 20;
+    }
+
+    if (ratio >= 3) {
+
+        momentum += 20;
+    }
+
+    // LOW MARKETCAP GEM
+
+    if (marketcap < 150000) {
+
+        momentum += 20;
+    }
+
+    return momentum;
+}
+
+// =====================================
 // AI SCORE
 // =====================================
 
@@ -322,7 +364,7 @@ async function getNewTokens() {
             // AI SCORE
             // =====================================
 
-            const score =
+            let score =
                 calculateScore(
                     liquidity,
                     volume,
@@ -330,6 +372,19 @@ async function getNewTokens() {
                     socialScore,
                     whaleBuy
                 );
+
+            // =====================================
+            // MOMENTUM SCORE
+            // =====================================
+
+            const momentumScore =
+                getMomentumScore(
+                    liquidity,
+                    volume,
+                    marketcap
+                );
+
+            score += momentumScore;
 
             // =====================================
             // SIGNAL LEVEL
@@ -445,6 +500,9 @@ $${Number(volume).toLocaleString()}
 
 💰 <b>Marketcap:</b>
 $${Number(marketcap).toLocaleString()}
+
+⚡ <b>Momentum Score:</b>
+${momentumScore}
 
 🤖 <b>AI Score:</b>
 ${score}/100
