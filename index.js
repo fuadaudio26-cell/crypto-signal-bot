@@ -66,9 +66,7 @@ function calculateScore(
 
     let score = 0;
 
-    // =====================================
     // LIQUIDITY
-    // =====================================
 
     if (liquidity >= 100000) {
 
@@ -83,9 +81,7 @@ function calculateScore(
         score += 10;
     }
 
-    // =====================================
     // VOLUME
-    // =====================================
 
     if (volume >= 300000) {
 
@@ -100,9 +96,7 @@ function calculateScore(
         score += 10;
     }
 
-    // =====================================
     // MARKETCAP
-    // =====================================
 
     if (
         marketcap >= 50000 &&
@@ -112,9 +106,7 @@ function calculateScore(
         score += 20;
     }
 
-    // =====================================
     // AGE
-    // =====================================
 
     if (ageMinutes <= 5) {
 
@@ -125,18 +117,14 @@ function calculateScore(
         score += 10;
     }
 
-    // =====================================
     // WEBSITE
-    // =====================================
 
     if (website !== "No Website") {
 
         score += 10;
     }
 
-    // =====================================
     // TWITTER
-    // =====================================
 
     if (twitter !== "No Twitter") {
 
@@ -144,6 +132,30 @@ function calculateScore(
     }
 
     return score;
+}
+
+// =====================================
+// SOCIAL SCORE
+// =====================================
+
+function getSocialScore(
+    website,
+    twitter
+) {
+
+    let socialScore = 0;
+
+    if (website !== "No Website") {
+
+        socialScore += 1;
+    }
+
+    if (twitter !== "No Twitter") {
+
+        socialScore += 1;
+    }
+
+    return socialScore;
 }
 
 // =====================================
@@ -312,6 +324,25 @@ async function getNewTokens() {
             }
 
             // =====================================
+            // SOCIAL SCORE
+            // =====================================
+
+            const socialScore =
+                getSocialScore(
+                    website,
+                    twitter
+                );
+
+            // FILTER SOCIAL LEMAH
+
+            if (socialScore < 2) {
+
+                console.log("Weak social skip");
+
+                continue;
+            }
+
+            // =====================================
             // AI SCORE
             // =====================================
 
@@ -356,54 +387,71 @@ async function getNewTokens() {
             }
 
             // =====================================
+            // DEX LINKS
+            // =====================================
+
+            const dexscreener =
+            `https://dexscreener.com/${chain}/${contract}`;
+
+            const dextools =
+            `https://www.dextools.io/app/en/${chain}/pair-explorer/${contract}`;
+
+            // =====================================
             // MESSAGE
             // =====================================
 
             const message = `
-🚀 NEW TOKEN DETECTED
+🚀 <b>NEW TOKEN DETECTED</b>
 
-🪙 Name:
-${name} (${symbol})
+🪙 <b>${name} (${symbol})</b>
 
-⛓ Chain:
+⛓ <b>Chain:</b>
 ${chain}
 
-⏱ Age:
+⏱ <b>Age:</b>
 ${Math.floor(ageMinutes)} minutes
 
-💧 Liquidity:
+💧 <b>Liquidity:</b>
 $${Number(liquidity).toLocaleString()}
 
-📈 Volume 24H:
+📈 <b>Volume:</b>
 $${Number(volume).toLocaleString()}
 
-💰 Marketcap:
+💰 <b>Marketcap:</b>
 $${Number(marketcap).toLocaleString()}
 
-🤖 AI SCORE:
+🤖 <b>AI Score:</b>
 ${score}/100
 
-📊 SIGNAL:
+📊 <b>Signal:</b>
 ${signal}
 
-🐋 WHALE ALERT:
+🐋 <b>Whale Alert:</b>
 ${whaleAlert}
 
-🌐 Website:
+🌐 <b>Website:</b>
 ${website}
 
-🐦 Twitter:
+🐦 <b>Twitter:</b>
 ${twitter}
 
-📜 Contract:
-${contract}
+📜 <b>Contract:</b>
+<code>${contract}</code>
+
+📊 <a href="${dexscreener}">DexScreener</a>
+
+📈 <a href="${dextools}">DEXTools</a>
 `;
 
             console.log(message);
 
             await bot.sendMessage(
                 process.env.CHAT_ID,
-                message
+                message,
+                {
+                    parse_mode: "HTML",
+                    disable_web_page_preview: true
+                }
             );
 
             // =====================================
