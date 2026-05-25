@@ -61,103 +61,44 @@ function calculateScore(
     liquidity,
     volume,
     marketcap,
-    ageMinutes,
-    website,
-    twitter
+    socialScore,
+    whaleBuy
 ) {
 
     let score = 0;
 
     // LIQUIDITY
 
-    if (liquidity >= 100000) {
-
-        score += 30;
-    }
-    else if (liquidity >= 50000) {
-
-        score += 20;
-    }
-    else if (liquidity >= 10000) {
-
-        score += 10;
-    }
+    if (liquidity > 10000) score += 20;
+    if (liquidity > 25000) score += 10;
 
     // VOLUME
 
-    if (volume >= 300000) {
-
-        score += 30;
-    }
-    else if (volume >= 100000) {
-
-        score += 20;
-    }
-    else if (volume >= 20000) {
-
-        score += 10;
-    }
+    if (volume > 20000) score += 20;
+    if (volume > 50000) score += 10;
 
     // MARKETCAP
 
     if (
-        marketcap >= 50000 &&
-        marketcap <= 300000
+        marketcap > 20000 &&
+        marketcap < 500000
     ) {
 
         score += 20;
     }
 
-    // AGE
+    // SOCIAL
 
-    if (ageMinutes <= 5) {
+    score += socialScore * 10;
 
-        score += 20;
-    }
-    else if (ageMinutes <= 15) {
+    // WHALE
 
-        score += 10;
-    }
-
-    // WEBSITE
-
-    if (website !== "No Website") {
-
-        score += 10;
-    }
-
-    // TWITTER
-
-    if (twitter !== "No Twitter") {
+    if (whaleBuy) {
 
         score += 10;
     }
 
     return score;
-}
-
-// =====================================
-// SOCIAL SCORE
-// =====================================
-
-function getSocialScore(
-    website,
-    twitter
-) {
-
-    let socialScore = 0;
-
-    if (website !== "No Website") {
-
-        socialScore += 1;
-    }
-
-    if (twitter !== "No Twitter") {
-
-        socialScore += 1;
-    }
-
-    return socialScore;
 }
 
 // =====================================
@@ -209,6 +150,10 @@ async function getNewTokens() {
                 continue;
             }
 
+            // =====================================
+            // SOCIAL
+            // =====================================
+
             const website =
                 pair.info?.websites?.[0]?.url ||
                 "No Website";
@@ -217,6 +162,10 @@ async function getNewTokens() {
                 pair.info?.socials?.find(
                     s => s.type === "twitter"
                 )?.url || "No Twitter";
+
+            // =====================================
+            // MARKET DATA
+            // =====================================
 
             const liquidity =
                 pair.liquidity?.usd || 0;
@@ -235,7 +184,8 @@ async function getNewTokens() {
                 pair.pairCreatedAt || 0;
 
             const ageMinutes =
-                (Date.now() - createdAt) / 1000 / 60;
+                (Date.now() - createdAt)
+                / 1000 / 60;
 
             // =====================================
             // FILTER CHAIN
@@ -259,20 +209,6 @@ async function getNewTokens() {
             if (ageMinutes > 15) {
 
                 console.log("Age skip");
-
-                continue;
-            }
-
-            // =====================================
-            // FILTER SOCIAL
-            // =====================================
-
-            if (
-                website === "No Website" &&
-                twitter === "No Twitter"
-            ) {
-
-                console.log("Social skip");
 
                 continue;
             }
@@ -329,6 +265,26 @@ async function getNewTokens() {
             // SOCIAL SCORE
             // =====================================
 
+            function getSocialScore(
+                website,
+                twitter
+            ) {
+
+                let socialScore = 0;
+
+                if (website !== "No Website") {
+
+                    socialScore += 1;
+                }
+
+                if (twitter !== "No Twitter") {
+
+                    socialScore += 1;
+                }
+
+                return socialScore;
+            }
+
             const socialScore =
                 getSocialScore(
                     website,
@@ -345,6 +301,24 @@ async function getNewTokens() {
             }
 
             // =====================================
+            // WHALE DETECTOR
+            // =====================================
+
+            let whaleBuy = false;
+
+            if (
+                volume > liquidity * 2
+            ) {
+
+                whaleBuy = true;
+            }
+
+            const whaleAlert =
+                whaleBuy
+                ? "🐋 BIG BUY DETECTED"
+                : "Normal";
+
+            // =====================================
             // AI SCORE
             // =====================================
 
@@ -353,63 +327,89 @@ async function getNewTokens() {
                     liquidity,
                     volume,
                     marketcap,
-                    ageMinutes,
-                    website,
-                    twitter
+                    socialScore,
+                    whaleBuy
                 );
 
             // =====================================
             // SIGNAL LEVEL
             // =====================================
 
-            let signal = "RISKY";
+            let signal = "NORMAL";
 
-            let whaleAlert = "NO";
+            if (score >= 80) {
 
-            let pumpAlert = "NO";
+                signal = "🔥 ULTRA GEM";
+            }
 
-            // =====================================
-            // WHALE DETECTOR
-            // =====================================
+            else if (score >= 60) {
 
-            if (
-                volume > 100000 &&
-                liquidity > 30000 &&
-                ageMinutes < 10
-            ) {
+                signal = "🚀 STRONG";
+            }
 
-                whaleAlert = "YES";
+            else if (score >= 40) {
+
+                signal = "⚠ MEDIUM";
             }
 
             // =====================================
             // PUMP DETECTOR
             // =====================================
 
+            let pumpAlert = "Normal";
+
             if (
-                volume > 250000 &&
-                liquidity > 50000 &&
-                ageMinutes < 5 &&
-                score >= 70
+                volume > liquidity * 3
             ) {
 
-                pumpAlert = "YES";
+                pumpAlert =
+                    "🚀 POSSIBLE PUMP";
             }
 
             // =====================================
-            // SIGNAL LABEL
+            // EXTRA FILTER
             // =====================================
 
-            if (score >= 80) {
+            const bannedWords = [
+                "inu",
+                "elon",
+                "pepe",
+                "doge",
+                "ai",
+                "baby"
+            ];
 
-                signal = "STRONG BUY";
+            const lowerName =
+                name.toLowerCase();
+
+            let banned = false;
+
+            for (const word of bannedWords) {
+
+                if (
+                    lowerName.includes(word)
+                ) {
+
+                    banned = true;
+                }
             }
-            else if (score >= 60) {
 
-                signal = "GOOD";
+            if (banned) {
+
+                console.log("Meme skip");
+
+                continue;
             }
-            else if (score >= 40) {
 
-                signal = "MEDIUM";
+            // =====================================
+            // STRONG SIGNAL ONLY
+            // =====================================
+
+            if (score < 60) {
+
+                console.log("Low score skip");
+
+                continue;
             }
 
             // =====================================
@@ -455,7 +455,7 @@ ${signal}
 🐋 <b>Whale Alert:</b>
 ${whaleAlert}
 
-🚨 <b>Pump Alert:</b>
+🚀 <b>Pump Alert:</b>
 ${pumpAlert}
 
 🌐 <b>Website:</b>
@@ -502,6 +502,15 @@ ${twitter}
 // =====================================
 
 getNewTokens();
+
+// =====================================
+// TELEGRAM TEST
+// =====================================
+
+bot.sendMessage(
+    process.env.CHAT_ID,
+    "🚀 BOT ONLINE TEST"
+);
 
 // =====================================
 // AUTO SCAN
