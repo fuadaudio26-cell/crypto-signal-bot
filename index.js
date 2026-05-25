@@ -26,6 +26,7 @@ async function checkTokenSafety(contract) {
         const data = response.data;
 
         // HONEYPOT
+
         if (data.honeypot === true) {
 
             console.log("Honeypot skip");
@@ -34,6 +35,7 @@ async function checkTokenSafety(contract) {
         }
 
         // HIGH RISK
+
         if (data.riskLevel === "HIGH") {
 
             console.log("High risk skip");
@@ -364,6 +366,12 @@ async function getNewTokens() {
 
             let whaleAlert = "NO";
 
+            let pumpAlert = "NO";
+
+            // =====================================
+            // WHALE DETECTOR
+            // =====================================
+
             if (
                 volume > 100000 &&
                 liquidity > 30000 &&
@@ -372,6 +380,24 @@ async function getNewTokens() {
 
                 whaleAlert = "YES";
             }
+
+            // =====================================
+            // PUMP DETECTOR
+            // =====================================
+
+            if (
+                volume > 250000 &&
+                liquidity > 50000 &&
+                ageMinutes < 5 &&
+                score >= 70
+            ) {
+
+                pumpAlert = "YES";
+            }
+
+            // =====================================
+            // SIGNAL LABEL
+            // =====================================
 
             if (score >= 80) {
 
@@ -428,6 +454,9 @@ ${signal}
 
 🐋 <b>Whale Alert:</b>
 ${whaleAlert}
+
+🚨 <b>Pump Alert:</b>
+${pumpAlert}
 
 🌐 <b>Website:</b>
 ${website}
