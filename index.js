@@ -110,13 +110,13 @@ function calculateScore(
 
     // LIQUIDITY
 
-    if (liquidity > 1500) score += 20;
-    if (liquidity > 5000) score += 10;
+    if (liquidity > 3000) score += 20;
+    if (liquidity > 10000) score += 10;
 
     // VOLUME
 
-    if (volume > 2000) score += 20;
-    if (volume > 10000) score += 10;
+    if (volume > 5000) score += 20;
+    if (volume > 20000) score += 10;
 
     // MARKETCAP
 
@@ -244,6 +244,13 @@ async function getNewTokens() {
                 pair.marketCap || 0;
 
             // =====================================
+            // LIQUIDITY RATIO
+            // =====================================
+
+            const liquidityRatio =
+                liquidity / marketcap;
+
+            // =====================================
             // AGE TOKEN
             // =====================================
 
@@ -269,7 +276,9 @@ async function getNewTokens() {
             // FILTER LIQUIDITY
             // =====================================
 
-            if (liquidity < 1500) {
+            if (
+                liquidity < 3000
+            ) {
 
                 console.log("Liquidity skip");
 
@@ -283,6 +292,51 @@ async function getNewTokens() {
             if (volume < 2000) {
 
                 console.log("Volume skip");
+
+                continue;
+            }
+
+            // =====================================
+            // ANTI FAKE VOLUME
+            // =====================================
+
+            if (
+                volume > liquidity * 20
+            ) {
+
+                console.log(
+                    "Fake volume skip"
+                );
+
+                continue;
+            }
+
+            // =====================================
+            // LIQUIDITY RATIO
+            // =====================================
+
+            if (
+                liquidityRatio < 0.15
+            ) {
+
+                console.log(
+                    "Weak liquidity ratio"
+                );
+
+                continue;
+            }
+
+            // =====================================
+            // ANTI DEAD TOKEN
+            // =====================================
+
+            if (
+                volume < liquidity * 0.3
+            ) {
+
+                console.log(
+                    "Dead token skip"
+                );
 
                 continue;
             }
@@ -382,22 +436,22 @@ async function getNewTokens() {
 
             let gemProbability = 0;
 
-            if (score >= 25) {
+            if (score >= 45) {
 
                 gemProbability = 40;
             }
 
-            if (score >= 50) {
+            if (score >= 60) {
 
                 gemProbability = 60;
             }
 
-            if (score >= 70) {
+            if (score >= 80) {
 
                 gemProbability = 80;
             }
 
-            if (score >= 90) {
+            if (score >= 100) {
 
                 gemProbability = 95;
             }
@@ -408,17 +462,17 @@ async function getNewTokens() {
 
             let signal = "NORMAL";
 
-            if (score >= 90) {
+            if (score >= 100) {
 
                 signal = "🔥 ULTRA GEM";
             }
 
-            else if (score >= 60) {
+            else if (score >= 70) {
 
                 signal = "🚀 STRONG";
             }
 
-            else if (score >= 25) {
+            else if (score >= 45) {
 
                 signal = "⚠ MEDIUM";
             }
@@ -472,12 +526,14 @@ async function getNewTokens() {
             }
 
             // =====================================
-            // SCORE FILTER
+            // ONLY STRONG SIGNAL
             // =====================================
 
-            if (score < 25) {
+            if (score < 45) {
 
-                console.log("Low score skip");
+                console.log(
+                    "Low score skip"
+                );
 
                 continue;
             }
@@ -515,6 +571,9 @@ $${Number(volume).toLocaleString()}
 
 💰 <b>Marketcap:</b>
 $${Number(marketcap).toLocaleString()}
+
+💦 <b>Liquidity Ratio:</b>
+${(liquidityRatio * 100).toFixed(1)}%
 
 ⚡ <b>Momentum Score:</b>
 ${momentumScore}
