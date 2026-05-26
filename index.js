@@ -109,13 +109,13 @@ function calculateScore(
 
     // LIQUIDITY
 
-    if (liquidity > 10000) score += 20;
-    if (liquidity > 25000) score += 10;
+    if (liquidity > 3000) score += 20;
+    if (liquidity > 10000) score += 10;
 
     // VOLUME
 
-    if (volume > 20000) score += 20;
-    if (volume > 50000) score += 10;
+    if (volume > 5000) score += 20;
+    if (volume > 15000) score += 10;
 
     // MARKETCAP
 
@@ -281,7 +281,7 @@ async function getNewTokens() {
             // FILTER LIQUIDITY
             // =====================================
 
-            if (liquidity < 10000) {
+            if (liquidity < 3000) {
 
                 console.log("Liquidity skip");
 
@@ -292,7 +292,7 @@ async function getNewTokens() {
             // FILTER VOLUME
             // =====================================
 
-            if (volume < 20000) {
+            if (volume < 5000) {
 
                 console.log("Volume skip");
 
@@ -394,22 +394,22 @@ async function getNewTokens() {
 
             let gemProbability = 0;
 
-            if (score >= 40) {
+            if (score >= 25) {
 
                 gemProbability = 40;
             }
 
-            if (score >= 60) {
+            if (score >= 50) {
 
                 gemProbability = 60;
             }
 
-            if (score >= 80) {
+            if (score >= 70) {
 
                 gemProbability = 80;
             }
 
-            if (score >= 100) {
+            if (score >= 90) {
 
                 gemProbability = 95;
             }
@@ -420,17 +420,17 @@ async function getNewTokens() {
 
             let signal = "NORMAL";
 
-            if (score >= 100) {
+            if (score >= 90) {
 
                 signal = "🔥 ULTRA GEM";
             }
 
-            else if (score >= 70) {
+            else if (score >= 60) {
 
                 signal = "🚀 STRONG";
             }
 
-            else if (score >= 40) {
+            else if (score >= 25) {
 
                 signal = "⚠ MEDIUM";
             }
@@ -484,10 +484,10 @@ async function getNewTokens() {
             }
 
             // =====================================
-            // STRONG SIGNAL ONLY
+            // SCORE FILTER
             // =====================================
 
-            if (score < 40) {
+            if (score < 25) {
 
                 console.log("Low score skip");
 
