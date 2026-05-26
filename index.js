@@ -85,7 +85,7 @@ function getMomentumScore(
 
     // LOW MARKETCAP GEM
 
-    if (marketcap < 50000) {
+    if (marketcap < 150000) {
 
         momentum += 20;
     }
@@ -109,19 +109,19 @@ function calculateScore(
 
     // LIQUIDITY
 
-    if (liquidity > 3000) score += 20;
-    if (liquidity > 10000) score += 10;
+    if (liquidity > 1500) score += 20;
+    if (liquidity > 5000) score += 10;
 
     // VOLUME
 
-    if (volume > 5000) score += 20;
-    if (volume > 15000) score += 10;
+    if (volume > 2000) score += 20;
+    if (volume > 10000) score += 10;
 
     // MARKETCAP
 
     if (
         marketcap > 10000 &&
-        marketcap < 50000
+        marketcap < 150000
     ) {
 
         score += 20;
@@ -281,7 +281,7 @@ async function getNewTokens() {
             // FILTER LIQUIDITY
             // =====================================
 
-            if (liquidity < 3000) {
+            if (liquidity < 1500) {
 
                 console.log("Liquidity skip");
 
@@ -292,7 +292,7 @@ async function getNewTokens() {
             // FILTER VOLUME
             // =====================================
 
-            if (volume < 5000) {
+            if (volume < 2000) {
 
                 console.log("Volume skip");
 
@@ -305,7 +305,7 @@ async function getNewTokens() {
 
             if (
                 marketcap < 10000 ||
-                marketcap > 50000
+                marketcap > 150000
             ) {
 
                 console.log("Marketcap skip");
