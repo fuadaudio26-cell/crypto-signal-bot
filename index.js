@@ -173,11 +173,16 @@ async function getNewTokens() {
 
     try {
 
+        // =====================================
+        // NEW ACTIVE PAIRS API
+        // =====================================
+
         const response = await axios.get(
-            "https://api.dexscreener.com/token-profiles/latest/v1"
+            "https://api.dexscreener.com/latest/dex/pairs/solana"
         );
 
-        const tokens = response.data;
+        const tokens =
+            response.data.pairs || [];
 
         for (const pair of tokens) {
 
@@ -189,17 +194,14 @@ async function getNewTokens() {
                 pair.chainId || "Unknown";
 
             const name =
-                pair.tokenName ||
                 pair.baseToken?.name ||
                 "Unknown";
 
             const symbol =
-                pair.tokenSymbol ||
                 pair.baseToken?.symbol ||
                 "Unknown";
 
             const contract =
-                pair.tokenAddress ||
                 pair.baseToken?.address ||
                 "Unknown";
 
@@ -250,21 +252,6 @@ async function getNewTokens() {
             const ageMinutes =
                 (Date.now() - createdAt)
                 / 1000 / 60;
-
-            // =====================================
-            // FILTER CHAIN
-            // =====================================
-
-            if (
-                chain !== "solana" &&
-                chain !== "ethereum" &&
-                chain !== "bsc"
-            ) {
-
-                console.log("Chain skip");
-
-                continue;
-            }
 
             // =====================================
             // FILTER AGE
