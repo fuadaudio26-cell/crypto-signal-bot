@@ -83,7 +83,9 @@ function getMomentumScore(
         momentum += 20;
     }
 
-    if (marketcap < 150000) {
+    // LOW MARKETCAP GEM
+
+    if (marketcap < 50000) {
 
         momentum += 20;
     }
@@ -118,8 +120,8 @@ function calculateScore(
     // MARKETCAP
 
     if (
-        marketcap > 20000 &&
-        marketcap < 500000
+        marketcap > 10000 &&
+        marketcap < 50000
     ) {
 
         score += 20;
@@ -137,6 +139,30 @@ function calculateScore(
     }
 
     return score;
+}
+
+// =====================================
+// SOCIAL SCORE
+// =====================================
+
+function getSocialScore(
+    website,
+    twitter
+) {
+
+    let socialScore = 0;
+
+    if (website !== "No Website") {
+
+        socialScore += 1;
+    }
+
+    if (twitter !== "No Twitter") {
+
+        socialScore += 1;
+    }
+
+    return socialScore;
 }
 
 // =====================================
@@ -278,8 +304,8 @@ async function getNewTokens() {
             // =====================================
 
             if (
-                marketcap < 20000 ||
-                marketcap > 500000
+                marketcap < 10000 ||
+                marketcap > 50000
             ) {
 
                 console.log("Marketcap skip");
@@ -303,33 +329,15 @@ async function getNewTokens() {
             // SOCIAL SCORE
             // =====================================
 
-            function getSocialScore(
-                website,
-                twitter
-            ) {
-
-                let socialScore = 0;
-
-                if (website !== "No Website") {
-
-                    socialScore += 1;
-                }
-
-                if (twitter !== "No Twitter") {
-
-                    socialScore += 1;
-                }
-
-                return socialScore;
-            }
-
             const socialScore =
                 getSocialScore(
                     website,
                     twitter
                 );
 
-            if (socialScore < 2) {
+            // WEBSITE ATAU TWITTER
+
+            if (socialScore < 1) {
 
                 console.log("Weak social skip");
 
@@ -386,24 +394,24 @@ async function getNewTokens() {
 
             let gemProbability = 0;
 
+            if (score >= 40) {
+
+                gemProbability = 40;
+            }
+
             if (score >= 60) {
 
-                gemProbability = 50;
+                gemProbability = 60;
             }
 
             if (score >= 80) {
 
-                gemProbability = 75;
+                gemProbability = 80;
             }
 
             if (score >= 100) {
 
-                gemProbability = 90;
-            }
-
-            if (score >= 120) {
-
-                gemProbability = 99;
+                gemProbability = 95;
             }
 
             // =====================================
@@ -412,12 +420,12 @@ async function getNewTokens() {
 
             let signal = "NORMAL";
 
-            if (score >= 80) {
+            if (score >= 100) {
 
                 signal = "🔥 ULTRA GEM";
             }
 
-            else if (score >= 60) {
+            else if (score >= 70) {
 
                 signal = "🚀 STRONG";
             }
@@ -446,12 +454,11 @@ async function getNewTokens() {
             // =====================================
 
             const bannedWords = [
-                "inu",
-                "elon",
-                "pepe",
-                "doge",
-                "ai",
-                "baby"
+                "test",
+                "scam",
+                "fake",
+                "hack",
+                "rug"
             ];
 
             const lowerName =
@@ -480,7 +487,7 @@ async function getNewTokens() {
             // STRONG SIGNAL ONLY
             // =====================================
 
-            if (score < 60) {
+            if (score < 40) {
 
                 console.log("Low score skip");
 
