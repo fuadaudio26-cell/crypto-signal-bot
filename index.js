@@ -1,6 +1,3 @@
-# Full `index.js` — Professional Sniper Scanner
-
-```javascript
 require("dotenv").config();
 
 const TelegramBot = require("node-telegram-bot-api");
@@ -8,10 +5,6 @@ const axios = require("axios");
 const WebSocket = require("ws");
 
 const bot = new TelegramBot(process.env.BOT_TOKEN);
-
-// =====================================
-// ANTI DUPLICATE
-// =====================================
 
 const sentTokens = new Set();
 
@@ -29,20 +22,16 @@ async function checkTokenSafety(contract) {
 
         const data = response.data;
 
-        // HONEYPOT
-
         if (data.honeypot === true) {
 
-            console.log("Honeypot skip");
+            console.log("HONEYPOT SKIP");
 
             return false;
         }
 
-        // HIGH RISK
-
         if (data.riskLevel === "HIGH") {
 
-            console.log("High risk skip");
+            console.log("HIGH RISK SKIP");
 
             return false;
         }
@@ -51,48 +40,10 @@ async function checkTokenSafety(contract) {
 
     } catch (error) {
 
-        console.log("Rugcheck skip");
+        console.log("RUGCHECK ERROR");
 
         return false;
     }
-}
-
-// =====================================
-// MOMENTUM SCORE
-// =====================================
-
-function getMomentumScore(
-    liquidity,
-    volume,
-    marketcap
-) {
-
-    let momentum = 0;
-
-    const ratio =
-        volume / liquidity;
-
-    if (ratio >= 1) {
-
-        momentum += 20;
-    }
-
-    if (ratio >= 2) {
-
-        momentum += 20;
-    }
-
-    if (ratio >= 3) {
-
-        momentum += 20;
-    }
-
-    if (marketcap < 150000) {
-
-        momentum += 20;
-    }
-
-    return momentum;
 }
 
 // =====================================
@@ -109,17 +60,11 @@ function calculateScore(
 
     let score = 0;
 
-    // LIQUIDITY
-
     if (liquidity > 3000) score += 20;
     if (liquidity > 10000) score += 10;
 
-    // VOLUME
-
     if (volume > 5000) score += 20;
     if (volume > 20000) score += 10;
-
-    // MARKETCAP
 
     if (
         marketcap > 10000 &&
@@ -129,11 +74,7 @@ function calculateScore(
         score += 20;
     }
 
-    // SOCIAL
-
     score += socialScore * 10;
-
-    // WHALE
 
     if (whaleBuy) {
 
@@ -141,6 +82,32 @@ function calculateScore(
     }
 
     return score;
+}
+
+// =====================================
+// MOMENTUM
+// =====================================
+
+function getMomentumScore(
+    liquidity,
+    volume,
+    marketcap
+) {
+
+    let momentum = 0;
+
+    const ratio = volume / liquidity;
+
+    if (ratio >= 1) momentum += 20;
+    if (ratio >= 2) momentum += 20;
+    if (ratio >= 3) momentum += 20;
+
+    if (marketcap < 150000) {
+
+        momentum += 20;
+    }
+
+    return momentum;
 }
 
 // =====================================
@@ -168,7 +135,7 @@ function getSocialScore(
 }
 
 // =====================================
-// MAIN SCAN
+// DEXSCREENER SCANNER
 // =====================================
 
 async function getNewTokens() {
@@ -183,10 +150,6 @@ async function getNewTokens() {
             response.data.pairs || [];
 
         for (const pair of tokens) {
-
-            // =====================================
-            // BASIC DATA
-            // =====================================
 
             const chain =
                 pair.chainId || "Unknown";
@@ -203,20 +166,10 @@ async function getNewTokens() {
                 pair.baseToken?.address ||
                 "Unknown";
 
-            // =====================================
-            // ANTI DUPLICATE
-            // =====================================
-
             if (sentTokens.has(contract)) {
-
-                console.log("Duplicate skip");
 
                 continue;
             }
-
-            // =====================================
-            // SOCIAL
-            // =====================================
 
             const website =
                 pair.info?.websites?.[0]?.url ||
@@ -227,10 +180,6 @@ async function getNewTokens() {
                     s => s.type === "twitter"
                 )?.url || "No Twitter";
 
-            // =====================================
-            // MARKET DATA
-            // =====================================
-
             const liquidity =
                 pair.liquidity?.usd || 0;
 
@@ -240,25 +189,11 @@ async function getNewTokens() {
             const marketcap =
                 pair.marketCap || 0;
 
-            // =====================================
-            // LIQUIDITY RATIO
-            // =====================================
-
             const liquidityRatio =
                 liquidity / marketcap;
 
-            // =====================================
-            // HOLDER ESTIMATION
-            // =====================================
-
             const estimatedHolders =
-                Math.floor(
-                    volume / 150
-                );
-
-            // =====================================
-            // AGE TOKEN
-            // =====================================
+                Math.floor(volume / 150);
 
             const createdAt =
                 pair.pairCreatedAt || 0;
@@ -268,113 +203,35 @@ async function getNewTokens() {
                 / 1000 / 60;
 
             // =====================================
-            // FILTER AGE
+            // FILTERS
             // =====================================
 
-            if (ageMinutes > 15) {
+            if (ageMinutes > 15) continue;
 
-                console.log("Age skip");
+            if (liquidity < 3000) continue;
 
-                continue;
-            }
-
-            // =====================================
-            // FILTER LIQUIDITY
-            // =====================================
-
-            if (
-                liquidity < 3000
-            ) {
-
-                console.log("Liquidity skip");
-
-                continue;
-            }
-
-            // =====================================
-            // FILTER VOLUME
-            // =====================================
-
-            if (volume < 2000) {
-
-                console.log("Volume skip");
-
-                continue;
-            }
-
-            // =====================================
-            // ANTI FAKE VOLUME
-            // =====================================
+            if (volume < 2000) continue;
 
             if (
                 volume > liquidity * 20
-            ) {
-
-                console.log(
-                    "Fake volume skip"
-                );
-
-                continue;
-            }
-
-            // =====================================
-            // ANTI WEAK LIQUIDITY
-            // =====================================
+            ) continue;
 
             if (
                 liquidityRatio < 0.15
-            ) {
-
-                console.log(
-                    "Weak liquidity ratio"
-                );
-
-                continue;
-            }
-
-            // =====================================
-            // ANTI DEAD TOKEN
-            // =====================================
+            ) continue;
 
             if (
                 volume < liquidity * 0.3
-            ) {
-
-                console.log(
-                    "Dead token skip"
-                );
-
-                continue;
-            }
-
-            // =====================================
-            // HOLDER FILTER
-            // =====================================
+            ) continue;
 
             if (
                 estimatedHolders < 20
-            ) {
-
-                console.log(
-                    "Low holders skip"
-                );
-
-                continue;
-            }
-
-            // =====================================
-            // FILTER MARKETCAP
-            // =====================================
+            ) continue;
 
             if (
                 marketcap < 10000 ||
                 marketcap > 150000
-            ) {
-
-                console.log("Marketcap skip");
-
-                continue;
-            }
+            ) continue;
 
             // =====================================
             // RUGCHECK
@@ -383,13 +240,10 @@ async function getNewTokens() {
             const isSafe =
                 await checkTokenSafety(contract);
 
-            if (!isSafe) {
-
-                continue;
-            }
+            if (!isSafe) continue;
 
             // =====================================
-            // SOCIAL SCORE
+            // SOCIAL
             // =====================================
 
             const socialScore =
@@ -398,12 +252,7 @@ async function getNewTokens() {
                     twitter
                 );
 
-            if (socialScore < 1) {
-
-                console.log("Weak social skip");
-
-                continue;
-            }
+            if (socialScore < 1) continue;
 
             // =====================================
             // WHALE DETECTOR
@@ -421,7 +270,7 @@ async function getNewTokens() {
             const whaleAlert =
                 whaleBuy
                 ? "🐋 BIG BUY DETECTED"
-                : "Normal";
+                : "NORMAL";
 
             // =====================================
             // AI SCORE
@@ -436,10 +285,6 @@ async function getNewTokens() {
                     whaleBuy
                 );
 
-            // =====================================
-            // MOMENTUM SCORE
-            // =====================================
-
             const momentumScore =
                 getMomentumScore(
                     liquidity,
@@ -449,28 +294,9 @@ async function getNewTokens() {
 
             score += momentumScore;
 
-            // =====================================
-            // ONLY STRONG SIGNAL
-            // =====================================
-
-            if (score < 45) {
-
-                console.log(
-                    "Low score skip"
-                );
-
-                continue;
-            }
-
-            // =====================================
-            // SAVE TOKEN
-            // =====================================
+            if (score < 45) continue;
 
             sentTokens.add(contract);
-
-            // =====================================
-            // MESSAGE
-            // =====================================
 
             const message = `
 🚀 <b>NEW TOKEN DETECTED</b>
@@ -531,31 +357,26 @@ ${twitter}
 
     } catch (error) {
 
-        console.log("ERROR:");
         console.log(error.message);
     }
 }
 
 // =====================================
-// START
+// START NORMAL SCANNER
 // =====================================
 
 getNewTokens();
 
-// =====================================
-// AUTO SCAN
-// =====================================
-
 setInterval(() => {
 
-    console.log("Scanning new tokens...");
+    console.log("SCANNING TOKENS...");
 
     getNewTokens();
 
 }, 30000);
 
 // =====================================
-// PUMP.FUN REALTIME SCANNER
+// PUMPFUN REALTIME SCANNER
 // =====================================
 
 function startPumpFunScanner() {
@@ -567,7 +388,7 @@ function startPumpFunScanner() {
     ws.on("open", () => {
 
         console.log(
-            "Pump.fun scanner connected"
+            "PUMPFUN CONNECTED"
         );
 
         ws.send(
@@ -618,65 +439,27 @@ function startPumpFunScanner() {
             const liquidityRatio =
                 liquidity / marketcap;
 
-            if (marketcap < 20) {
+            // =====================================
+            // FILTERS
+            // =====================================
 
-                console.log(
-                    "Pump low MC skip"
-                );
+            if (marketcap < 20) return;
 
-                return;
-            }
+            if (liquidity < 10) return;
 
-            if (liquidity < 10) {
-
-                console.log(
-                    "Pump low liquidity"
-                );
-
-                return;
-            }
-
-            if (volume < 20) {
-
-                console.log(
-                    "Pump dead token"
-                );
-
-                return;
-            }
+            if (volume < 20) return;
 
             if (
                 volume > liquidity * 20
-            ) {
-
-                console.log(
-                    "Pump fake volume"
-                );
-
-                return;
-            }
+            ) return;
 
             if (
                 liquidityRatio < 0.15
-            ) {
-
-                console.log(
-                    "Pump weak liquidity"
-                );
-
-                return;
-            }
+            ) return;
 
             if (
                 estimatedHolders < 10
-            ) {
-
-                console.log(
-                    "Pump low holders"
-                );
-
-                return;
-            }
+            ) return;
 
             const lowerName =
                 name.toLowerCase();
@@ -695,23 +478,24 @@ function startPumpFunScanner() {
                     lowerName.includes(word)
                 ) {
 
-                    console.log(
-                        "Pump scam skip"
-                    );
-
                     return;
                 }
             }
+
+            // =====================================
+            // RUGCHECK
+            // =====================================
 
             const isSafe =
                 await checkTokenSafety(
                     contract
                 );
 
-            if (!isSafe) {
+            if (!isSafe) return;
 
-                return;
-            }
+            // =====================================
+            // WHALE DETECTOR
+            // =====================================
 
             let whaleBuy = false;
 
@@ -725,7 +509,11 @@ function startPumpFunScanner() {
             const whaleAlert =
                 whaleBuy
                 ? "🐋 BIG BUY DETECTED"
-                : "Normal";
+                : "NORMAL";
+
+            // =====================================
+            // AI SCORE
+            // =====================================
 
             const socialScore = 1;
 
@@ -747,14 +535,7 @@ function startPumpFunScanner() {
 
             score += momentumScore;
 
-            if (score < 45) {
-
-                console.log(
-                    "Pump low score"
-                );
-
-                return;
-            }
+            if (score < 45) return;
 
             sentTokens.add(contract);
 
@@ -812,7 +593,7 @@ Pump.fun
         } catch (error) {
 
             console.log(
-                "Pumpfun parse error"
+                "PUMPFUN ERROR"
             );
 
             console.log(error.message);
@@ -822,7 +603,7 @@ Pump.fun
     ws.on("close", () => {
 
         console.log(
-            "Pump.fun disconnected"
+            "PUMPFUN DISCONNECTED"
         );
 
         setTimeout(() => {
@@ -834,8 +615,7 @@ Pump.fun
 }
 
 // =====================================
-// START PUMP SCANNER
+// START PUMPFUN
 // =====================================
 
 startPumpFunScanner();
-```
