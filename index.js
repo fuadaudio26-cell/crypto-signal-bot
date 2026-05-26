@@ -143,7 +143,7 @@ async function getNewTokens() {
     try {
 
         const response = await axios.get(
-            "https://api.dexscreener.com/latest/dex/pairs/solana"
+            "https://api.dexscreener.com/token-profiles/latest/v1"
         );
 
         const tokens =
