@@ -1,3 +1,6 @@
+# Full `index.js` — Professional Sniper Scanner
+
+```javascript
 require("dotenv").config();
 
 const TelegramBot = require("node-telegram-bot-api");
@@ -447,101 +450,6 @@ async function getNewTokens() {
             score += momentumScore;
 
             // =====================================
-            // GEM PROBABILITY
-            // =====================================
-
-            let gemProbability = 0;
-
-            if (score >= 45) {
-
-                gemProbability = 40;
-            }
-
-            if (score >= 60) {
-
-                gemProbability = 60;
-            }
-
-            if (score >= 80) {
-
-                gemProbability = 80;
-            }
-
-            if (score >= 100) {
-
-                gemProbability = 95;
-            }
-
-            // =====================================
-            // SIGNAL LEVEL
-            // =====================================
-
-            let signal = "NORMAL";
-
-            if (score >= 100) {
-
-                signal = "🔥 ULTRA GEM";
-            }
-
-            else if (score >= 70) {
-
-                signal = "🚀 STRONG";
-            }
-
-            else if (score >= 45) {
-
-                signal = "⚠ MEDIUM";
-            }
-
-            // =====================================
-            // PUMP DETECTOR
-            // =====================================
-
-            let pumpAlert = "Normal";
-
-            if (
-                volume > liquidity * 3
-            ) {
-
-                pumpAlert =
-                    "🚀 POSSIBLE PUMP";
-            }
-
-            // =====================================
-            // EXTRA FILTER
-            // =====================================
-
-            const bannedWords = [
-                "test",
-                "scam",
-                "fake",
-                "hack",
-                "rug"
-            ];
-
-            const lowerName =
-                name.toLowerCase();
-
-            let banned = false;
-
-            for (const word of bannedWords) {
-
-                if (
-                    lowerName.includes(word)
-                ) {
-
-                    banned = true;
-                }
-            }
-
-            if (banned) {
-
-                console.log("Meme skip");
-
-                continue;
-            }
-
-            // =====================================
             // ONLY STRONG SIGNAL
             // =====================================
 
@@ -555,14 +463,10 @@ async function getNewTokens() {
             }
 
             // =====================================
-            // DEX LINKS
+            // SAVE TOKEN
             // =====================================
 
-            const dexscreener =
-            `https://dexscreener.com/${chain}/${contract}`;
-
-            const dextools =
-            `https://www.dextools.io/app/en/${chain}/pair-explorer/${contract}`;
+            sentTokens.add(contract);
 
             // =====================================
             // MESSAGE
@@ -600,17 +504,8 @@ ${momentumScore}
 🤖 <b>AI Score:</b>
 ${score}/100
 
-💎 <b>Gem Probability:</b>
-${gemProbability}%
-
-📊 <b>Signal:</b>
-${signal}
-
 🐋 <b>Whale Alert:</b>
 ${whaleAlert}
-
-🚀 <b>Pump Alert:</b>
-${pumpAlert}
 
 🌐 <b>Website:</b>
 ${website}
@@ -620,14 +515,6 @@ ${twitter}
 
 📜 <b>Contract:</b>
 <code>${contract}</code>
-
-📊 <a href="${dexscreener}">
-DexScreener
-</a>
-
-📈 <a href="${dextools}">
-DEXTools
-</a>
 `;
 
             console.log(message);
@@ -640,12 +527,6 @@ DEXTools
                     disable_web_page_preview: true
                 }
             );
-
-            // =====================================
-            // SAVE TOKEN
-            // =====================================
-
-            sentTokens.add(contract);
         }
 
     } catch (error) {
@@ -713,8 +594,6 @@ function startPumpFunScanner() {
             const contract =
                 token.mint || "Unknown";
 
-            // ANTI DUPLICATE
-
             if (
                 sentTokens.has(contract)
             ) {
@@ -722,12 +601,194 @@ function startPumpFunScanner() {
                 return;
             }
 
+            const marketcap =
+                token.marketCapSol || 0;
+
+            const liquidity =
+                token.vSolInBondingCurve || 0;
+
+            const volume =
+                token.marketCapSol || 0;
+
+            const estimatedHolders =
+                Math.floor(
+                    marketcap / 80
+                );
+
+            const liquidityRatio =
+                liquidity / marketcap;
+
+            if (marketcap < 20) {
+
+                console.log(
+                    "Pump low MC skip"
+                );
+
+                return;
+            }
+
+            if (liquidity < 10) {
+
+                console.log(
+                    "Pump low liquidity"
+                );
+
+                return;
+            }
+
+            if (volume < 20) {
+
+                console.log(
+                    "Pump dead token"
+                );
+
+                return;
+            }
+
+            if (
+                volume > liquidity * 20
+            ) {
+
+                console.log(
+                    "Pump fake volume"
+                );
+
+                return;
+            }
+
+            if (
+                liquidityRatio < 0.15
+            ) {
+
+                console.log(
+                    "Pump weak liquidity"
+                );
+
+                return;
+            }
+
+            if (
+                estimatedHolders < 10
+            ) {
+
+                console.log(
+                    "Pump low holders"
+                );
+
+                return;
+            }
+
+            const lowerName =
+                name.toLowerCase();
+
+            const bannedWords = [
+                "test",
+                "scam",
+                "fake",
+                "rug",
+                "hack"
+            ];
+
+            for (const word of bannedWords) {
+
+                if (
+                    lowerName.includes(word)
+                ) {
+
+                    console.log(
+                        "Pump scam skip"
+                    );
+
+                    return;
+                }
+            }
+
+            const isSafe =
+                await checkTokenSafety(
+                    contract
+                );
+
+            if (!isSafe) {
+
+                return;
+            }
+
+            let whaleBuy = false;
+
+            if (
+                volume > liquidity * 2
+            ) {
+
+                whaleBuy = true;
+            }
+
+            const whaleAlert =
+                whaleBuy
+                ? "🐋 BIG BUY DETECTED"
+                : "Normal";
+
+            const socialScore = 1;
+
+            let score =
+                calculateScore(
+                    liquidity,
+                    volume,
+                    marketcap,
+                    socialScore,
+                    whaleBuy
+                );
+
+            const momentumScore =
+                getMomentumScore(
+                    liquidity,
+                    volume,
+                    marketcap
+                );
+
+            score += momentumScore;
+
+            if (score < 45) {
+
+                console.log(
+                    "Pump low score"
+                );
+
+                return;
+            }
+
             sentTokens.add(contract);
 
+            setTimeout(() => {
+
+                sentTokens.delete(contract);
+
+            }, 1000 * 60 * 60);
+
             const message = `
-🔥 <b>PUMP.FUN EARLY TOKEN</b>
+🔥 <b>PUMP.FUN SNIPER SIGNAL</b>
 
 🪙 <b>${name} (${symbol})</b>
+
+💰 <b>Marketcap:</b>
+${marketcap.toFixed(2)} SOL
+
+💧 <b>Liquidity:</b>
+${liquidity.toFixed(2)} SOL
+
+👥 <b>Estimated Holders:</b>
+${estimatedHolders}
+
+💦 <b>Liquidity Ratio:</b>
+${(liquidityRatio * 100).toFixed(1)}%
+
+⚡ <b>Momentum Score:</b>
+${momentumScore}
+
+🤖 <b>AI Score:</b>
+${score}/100
+
+🐋 <b>Whale Alert:</b>
+${whaleAlert}
 
 📜 <b>Contract:</b>
 
@@ -735,10 +796,6 @@ function startPumpFunScanner() {
 
 🚀 <b>Source:</b>
 Pump.fun
-
-📈 <a href="https://pump.fun/${contract}">
-Open Pump.fun
-</a>
 `;
 
             console.log(message);
@@ -757,6 +814,8 @@ Open Pump.fun
             console.log(
                 "Pumpfun parse error"
             );
+
+            console.log(error.message);
         }
     });
 
@@ -779,3 +838,4 @@ Open Pump.fun
 // =====================================
 
 startPumpFunScanner();
+```
