@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const TelegramBot = require("node-telegram-bot-api");
 const axios = require("axios");
+const WebSocket = require("ws");
 
 const bot = new TelegramBot(process.env.BOT_TOKEN);
 
@@ -174,7 +175,7 @@ async function getNewTokens() {
     try {
 
         // =====================================
-        // NEW ACTIVE PAIRS API
+        // ACTIVE SOLANA PAIRS
         // =====================================
 
         const response = await axios.get(
@@ -589,3 +590,110 @@ setInterval(() => {
     getNewTokens();
 
 }, 30000);
+
+// =====================================
+// PUMP.FUN SCANNER
+// =====================================
+
+function startPumpFunScanner() {
+
+    const ws = new WebSocket(
+        "wss://pumpportal.fun/api/data"
+    );
+
+    ws.on("open", () => {
+
+        console.log(
+            "Pump.fun scanner connected"
+        );
+
+        ws.send(
+            JSON.stringify({
+                method:
+                "subscribeNewToken"
+            })
+        );
+    });
+
+    ws.on("message", async (data) => {
+
+        try {
+
+            const token =
+                JSON.parse(data);
+
+            const name =
+                token.name || "Unknown";
+
+            const symbol =
+                token.symbol || "Unknown";
+
+            const contract =
+                token.mint || "Unknown";
+
+            // ANTI DUPLICATE
+
+            if (
+                sentTokens.has(contract)
+            ) {
+
+                return;
+            }
+
+            sentTokens.add(contract);
+
+            const message = `
+🔥 <b>PUMP.FUN EARLY TOKEN</b>
+
+🪙 <b>${name} (${symbol})</b>
+
+📜 <b>Contract:</b>
+
+<code>${contract}</code>
+
+🚀 <b>Source:</b>
+Pump.fun
+
+📈 <a href="https://pump.fun/${contract}">
+Open Pump.fun
+</a>
+`;
+
+            console.log(message);
+
+            await bot.sendMessage(
+                process.env.CHAT_ID,
+                message,
+                {
+                    parse_mode: "HTML",
+                    disable_web_page_preview: true
+                }
+            );
+
+        } catch (error) {
+
+            console.log(
+                "Pumpfun parse error"
+            );
+        }
+    });
+
+    ws.on("close", () => {
+
+        console.log(
+            "Pump.fun disconnected"
+        );
+
+        setTimeout(() => {
+
+            startPumpFunScanner();
+
+        }, 5000);
+    });
+}
+
+// =====================================
+// START PUMP SCANNER
+// =====================================
+
+startPumpFunScanner();
