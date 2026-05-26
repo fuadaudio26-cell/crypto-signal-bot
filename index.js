@@ -84,8 +84,6 @@ function getMomentumScore(
         momentum += 20;
     }
 
-    // LOW MARKETCAP GEM
-
     if (marketcap < 150000) {
 
         momentum += 20;
@@ -174,10 +172,6 @@ async function getNewTokens() {
 
     try {
 
-        // =====================================
-        // ACTIVE SOLANA PAIRS
-        // =====================================
-
         const response = await axios.get(
             "https://api.dexscreener.com/latest/dex/pairs/solana"
         );
@@ -251,6 +245,15 @@ async function getNewTokens() {
                 liquidity / marketcap;
 
             // =====================================
+            // HOLDER ESTIMATION
+            // =====================================
+
+            const estimatedHolders =
+                Math.floor(
+                    volume / 150
+                );
+
+            // =====================================
             // AGE TOKEN
             // =====================================
 
@@ -312,7 +315,7 @@ async function getNewTokens() {
             }
 
             // =====================================
-            // LIQUIDITY RATIO
+            // ANTI WEAK LIQUIDITY
             // =====================================
 
             if (
@@ -336,6 +339,21 @@ async function getNewTokens() {
 
                 console.log(
                     "Dead token skip"
+                );
+
+                continue;
+            }
+
+            // =====================================
+            // HOLDER FILTER
+            // =====================================
+
+            if (
+                estimatedHolders < 20
+            ) {
+
+                console.log(
+                    "Low holders skip"
                 );
 
                 continue;
@@ -376,8 +394,6 @@ async function getNewTokens() {
                     website,
                     twitter
                 );
-
-            // WEBSITE ATAU TWITTER
 
             if (socialScore < 1) {
 
@@ -572,6 +588,9 @@ $${Number(volume).toLocaleString()}
 💰 <b>Marketcap:</b>
 $${Number(marketcap).toLocaleString()}
 
+👥 <b>Estimated Holders:</b>
+${estimatedHolders}
+
 💦 <b>Liquidity Ratio:</b>
 ${(liquidityRatio * 100).toFixed(1)}%
 
@@ -602,9 +621,13 @@ ${twitter}
 📜 <b>Contract:</b>
 <code>${contract}</code>
 
-📊 <a href="${dexscreener}">DexScreener</a>
+📊 <a href="${dexscreener}">
+DexScreener
+</a>
 
-📈 <a href="${dextools}">DEXTools</a>
+📈 <a href="${dextools}">
+DEXTools
+</a>
 `;
 
             console.log(message);
@@ -651,7 +674,7 @@ setInterval(() => {
 }, 30000);
 
 // =====================================
-// PUMP.FUN SCANNER
+// PUMP.FUN REALTIME SCANNER
 // =====================================
 
 function startPumpFunScanner() {
