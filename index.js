@@ -293,6 +293,43 @@ async function getNewTokens() {
                 );
 
             score += momentumScore;
+            // =====================================
+// ANTI DUMP SCORE
+// =====================================
+
+let antiDumpPenalty = 0;
+
+// MARKETCAP TERLALU BESAR
+// DIBANDING LIQUIDITY
+
+if (
+    marketcap > liquidity * 12
+) {
+
+    antiDumpPenalty += 10;
+}
+
+// VOLUME TERLALU LIAR
+
+if (
+    volume > liquidity * 8
+) {
+
+    antiDumpPenalty += 10;
+}
+
+// LIQUIDITY RATIO RENDAH
+
+if (
+    liquidityRatio < 0.20
+) {
+
+    antiDumpPenalty += 15;
+}
+
+// KURANGI SCORE
+
+score -= antiDumpPenalty;
 
             if (score < 45) continue;
 
@@ -329,6 +366,8 @@ ${momentumScore}
 
 🤖 <b>AI Score:</b>
 ${score}/100
+🛡 <b>Anti Dump Penalty:</b>
+${antiDumpPenalty}
 
 🐋 <b>Whale Alert:</b>
 ${whaleAlert}
