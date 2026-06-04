@@ -330,6 +330,9 @@ if (
 // KURANGI SCORE
 
 score -= antiDumpPenalty;
+console.log(
+    `${symbol} | score=${score} | liquidity=${liquidity} | volume=${volume}`
+);
 
             if (score < 45) continue;
 
@@ -404,6 +407,7 @@ ${twitter}
 // START NORMAL SCANNER
 // =====================================
 
+/*
 getNewTokens();
 
 setInterval(() => {
@@ -413,6 +417,7 @@ setInterval(() => {
     getNewTokens();
 
 }, 30000);
+*/
 
 // =====================================
 // PUMPFUN REALTIME SCANNER
@@ -444,6 +449,10 @@ function startPumpFunScanner() {
 
             const token =
                 JSON.parse(data);
+
+                console.log(
+    `NEW TOKEN: ${token.name} (${token.symbol})`
+);
 
             const name =
                 token.name || "Unknown";
@@ -482,11 +491,11 @@ function startPumpFunScanner() {
             // FILTERS
             // =====================================
 
-            if (marketcap < 20) return;
+            if (marketcap < 5) return;
 
-            if (liquidity < 10) return;
+            if (liquidity < 3) return;
 
-            if (volume < 20) return;
+            if (volume < 5) return;
 
             if (
                 volume > liquidity * 20
@@ -572,9 +581,26 @@ function startPumpFunScanner() {
                     marketcap
                 );
 
-            score += momentumScore;
+score += momentumScore;
 
-            if (score < 45) return;
+let antiDumpPenalty = 0;
+
+if (marketcap > liquidity * 12)
+    antiDumpPenalty += 10;
+
+if (volume > liquidity * 8)
+    antiDumpPenalty += 10;
+
+if (liquidityRatio < 0.20)
+    antiDumpPenalty += 15;
+
+score -= antiDumpPenalty;
+
+console.log(
+    `${symbol} | score=${score}`
+);
+
+if (score < 45) return;
 
             sentTokens.add(contract);
 
