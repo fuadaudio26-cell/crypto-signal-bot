@@ -470,19 +470,23 @@ function startPumpFunScanner() {
                 return;
             }
 
-            const marketcap =
-                token.marketCapSol || 0;
+ const marketcap =
+    token.marketCapSol || 0;
 
-            const liquidity =
-                token.vSolInBondingCurve || 0;
+const liquidity =
+    token.vSolInBondingCurve || 0;
 
-            const volume =
-                token.marketCapSol || 0;
+const volume =
+    token.marketCapSol || 0;
 
-            const estimatedHolders =
-                Math.floor(
-                    marketcap / 80
-                );
+console.log(
+    `${symbol} | MC=${marketcap} | LIQ=${liquidity} | VOL=${volume}`
+);
+
+const estimatedHolders =
+    Math.floor(
+        marketcap / 80
+    );
 
             const liquidityRatio =
                 liquidity / marketcap;
