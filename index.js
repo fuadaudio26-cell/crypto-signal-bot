@@ -460,6 +460,8 @@ function startPumpFunScanner() {
             const symbol =
                 token.symbol || "Unknown";
 
+                console.log("DEBUG 123");
+
             const contract =
                 token.mint || "Unknown";
 
